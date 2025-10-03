@@ -1,0 +1,9 @@
+docling
+python-dotenv
+langchain
+langchain-core
+langgraph
+langchain_docling
+langchain_google_genai
+langchain_milvus
+typing-extensions
