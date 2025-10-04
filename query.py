@@ -1,4 +1,6 @@
-﻿from langchain_google_genai import GoogleGenerativeAIEmbeddings
+﻿import os
+
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain import hub
 from langchain_core.documents import Document
 from langgraph.graph import START, StateGraph
@@ -12,7 +14,7 @@ embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
 vectorstore = Milvus(
     embedding_function=embeddings,
     collection_name="clinicalGuides",
-    connection_args={"uri": "http://localhost:19530", "token": "root:Milvus", "db_name": "enarmy"},
+    connection_args={"uri": "https://in03-5a9f451583761f1.serverless.gcp-us-west1.cloud.zilliz.com", "token": os.getenv("MILVUS_TOKEN") , "db_name": "enarmy"},
     index_params={"index_type": "FLAT", "metric_type": "L2"},
     consistency_level="Strong",
     drop_old=False,  # set to True if seeking to drop the collection with that name if it exists
@@ -48,7 +50,7 @@ graph_builder = StateGraph(State).add_sequence([retrieve, generate])
 graph_builder.add_edge(START, "retrieve")
 graph = graph_builder.compile()
 
-QUESTION = "cuales son algunos síntomas de ansiedad?"
+QUESTION = "explica Enfermedad inflamatoria pélvica"
 response = graph.invoke({"question": QUESTION})
 
 print(f"Question:\n{QUESTION}\n\nAnswer:\n{response['answer']}")
