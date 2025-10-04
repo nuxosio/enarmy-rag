@@ -5,6 +5,7 @@ from langgraph.graph import START, StateGraph
 from typing_extensions import List, TypedDict
 from langchain_milvus import Milvus
 from langchain.chat_models import init_chat_model
+import json
 
 llm = init_chat_model("gemini-2.5-flash", model_provider="google_genai")
 embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
@@ -39,10 +40,25 @@ def generate(state: State):
     response = llm.invoke(messages)
     return {"answer": response.content}
 
+def clip_text(text, threshold=100):
+    return f"{text[:threshold]}..." if len(text) > threshold else text
+
 # Compile application and test
 graph_builder = StateGraph(State).add_sequence([retrieve, generate])
 graph_builder.add_edge(START, "retrieve")
 graph = graph_builder.compile()
 
-response = graph.invoke({"question": "que hacer si hay Vaginitis por Candida sp y existe embarazo?"})
-print(response["answer"])
+QUESTION = "cuales son algunos síntomas de ansiedad?"
+response = graph.invoke({"question": QUESTION})
+
+print(f"Question:\n{QUESTION}\n\nAnswer:\n{response['answer']}")
+
+for i, doc in enumerate(response["context"]):
+    print()
+    print(f"Source {i + 1}:")
+    print(f"  text: {json.dumps(clip_text(doc.page_content, threshold=350))}")
+    for key in doc.metadata:
+        if key != "pk":
+            val = doc.metadata.get(key)
+            clipped_val = clip_text(val) if isinstance(val, str) else val
+            print(f"  {key}: {clipped_val}")

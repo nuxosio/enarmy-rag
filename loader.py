@@ -18,7 +18,7 @@ vectorstore = Milvus(
 )
 
 # Load and chunk content
-FILE_PATH = "./data/081GER_1.pdf"
+FILE_PATH = "./data/499GER_0.pdf"
 loader = DoclingLoader(file_path=FILE_PATH)
 docs = loader.load()
 
